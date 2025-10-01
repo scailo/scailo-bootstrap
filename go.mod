@@ -3,6 +3,7 @@ module github.com/scailo/scailo-bootstrap
 go 1.24.4
 
 require (
+	github.com/joho/godotenv v1.5.1
 	github.com/scailo/go-sdk v0.1.0
 	google.golang.org/grpc v1.75.1
 )

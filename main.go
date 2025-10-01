@@ -14,23 +14,30 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 var serverURL string
+var envUsername string
+var envPassword string
 
 func getServerURL() string {
 	return serverURL
 }
 
 func getLoginCreds() (username string, password string) {
-	return "", ""
+	return envUsername, envPassword
 }
 
 var dir string
 
 func main() {
 
-	serverURLPtr := flag.String("url", "127.0.0.1:21000", "Enter the server URL.")
+	serverURLPtr := flag.String("server_url", "127.0.0.1:21000", "Enter the server URL.")
+
+	envFilePathPtr := flag.String("env-file", "./.env", "Enter the path to the .env file.")
 
 	modePtr := flag.String("mode", "", "Enter the operation mode: download or upload. 'download' would download all the templates from the server to a 'templates' folder. 'upload' would upload all the templates from the 'uploads' folder to the server.")
 	dirPtr := flag.String("dir", "templates", "Enter the folder where the CSV files will be downloaded in case mode is download, or the folder where the CSV files will be uploaded from in case mode is upload.")
@@ -40,14 +47,33 @@ func main() {
 
 	flag.Parse()
 
-	serverURL = *serverURLPtr
 	if *modePtr != "upload" && *modePtr != "download" {
 		flag.Usage()
 		// fmt.Println("Invalid mode: `", *modePtr, "`. Please enter `download` or `upload`. Execute the command with the flag: --mode: `upload` or --mode: `download`")
 		os.Exit(1)
 	}
 
+	godotenv.Load(*envFilePathPtr)
+
+	serverURL = os.Getenv("server_url")
+	if serverURL == "" {
+		serverURL = *serverURLPtr
+	}
+
+	envUsername = os.Getenv("username")
+	envPassword = os.Getenv("password")
+
+	if len(envUsername) == 0 {
+		fmt.Println("Username is empty. Please enter the username in the .env file.")
+		os.Exit(1)
+	}
+	if len(envPassword) == 0 {
+		fmt.Println("Password is empty. Please enter the password in the .env file.")
+		os.Exit(1)
+	}
+
 	fmt.Println("Server URL is: ", getServerURL())
+	fmt.Println("Username is: ", envUsername)
 	fmt.Println("Mode is: ", *modePtr)
 	fmt.Println("Dir is: ", *dirPtr)
 
