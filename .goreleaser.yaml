@@ -1,0 +1,8 @@
+builds:
+  - main: .
+    id: "scailo-bootstrap"
+    binary: scailo-bootstrap
+    goos:
+      - linux
+      - darwin
+      - windows
