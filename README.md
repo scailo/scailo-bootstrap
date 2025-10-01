@@ -5,7 +5,7 @@
 <h1 align="center">Scailo Bootstrap CLI</h1>
 
 <p align="center">
-  A powerful command-line tool to simplify and accelerate data onboarding in <a target="_blank" href="https://scailo.com">Scailo</a>.
+  A powerful command-line tool to simplify and accelerate data onboarding into <a target="_blank" href="https://scailo.com">Scailo</a>.
 </p>
 
 ---
