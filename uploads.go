@@ -929,6 +929,13 @@ func uploadFormsSectionsTemplate(ctx context.Context, conn *grpc.ClientConn) {
 	}
 }
 
+func uploadGeneralSettingsTemplate(ctx context.Context, conn *grpc.ClientConn) {
+	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadGeneralSettingsTemplate(ctx, conn))
+	if toUploadFile != nil {
+		sdk.NewGeneralSettingsServiceClient(conn).ImportFromCSV(ctx, toUploadFile)
+	}
+}
+
 func uploadHolidaysTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
 	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadHolidaysTemplate(ctx, conn))
 	var addedList = initAddedList()
@@ -2048,6 +2055,8 @@ func uploadVendorsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVer
 func uploadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
 	uploadFormsSectionsTemplate(ctx, conn)
 	uploadFormsFieldsTemplate(ctx, conn)
+
+	uploadGeneralSettingsTemplate(ctx, conn)
 
 	uploadActionCodesTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadActivitiesGroupsTemplate(ctx, conn, shouldVerify, shouldApprove)

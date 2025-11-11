@@ -92,6 +92,10 @@ func downloadFormsSectionsTemplate(ctx context.Context, conn *grpc.ClientConn) (
 	return sdk.NewFormsSectionsServiceClient(conn).DownloadAsCSV(ctx, &sdk.FormsSectionsServiceFilterReq{})
 }
 
+func downloadGeneralSettingsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.StandardFile, error) {
+	return sdk.NewGeneralSettingsServiceClient(conn).DownloadImportTemplate(ctx, &sdk.Empty{})
+}
+
 func downloadHolidaysTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.StandardFile, error) {
 	return sdk.NewHolidaysServiceClient(conn).DownloadAsCSV(ctx, &sdk.HolidaysServiceFilterReq{})
 }
@@ -238,6 +242,8 @@ func downloadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn) {
 	savePrimaryRecordsToFile(downloadFormsFieldsTemplate(ctx, conn))
 	// Form Sections
 	savePrimaryRecordsToFile(downloadFormsSectionsTemplate(ctx, conn))
+	// General Settings
+	savePrimaryRecordsToFile(downloadGeneralSettingsTemplate(ctx, conn))
 	// Holidays
 	savePrimaryRecordsToFile(downloadHolidaysTemplate(ctx, conn))
 	// Infrastructures
