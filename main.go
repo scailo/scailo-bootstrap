@@ -12,6 +12,7 @@ import (
 
 	"github.com/scailo/go-sdk"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
@@ -35,7 +36,7 @@ var dir string
 
 func main() {
 
-	serverURLPtr := flag.String("server_url", "127.0.0.1:21000", "Enter the server URL.")
+	serverURLPtr := flag.String("server_url", "http://127.0.0.1:21000", "Enter the server URL.")
 
 	envFilePathPtr := flag.String("env-file", "./.env", "Enter the path to the .env file.")
 
@@ -77,7 +78,16 @@ func main() {
 	fmt.Println("Mode is: ", *modePtr)
 	fmt.Println("Dir is: ", *dirPtr)
 
-	conn, err := grpc.NewClient(getServerURL(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	var creds grpc.DialOption
+	if strings.HasPrefix(getServerURL(), "http://") {
+		// Without TLS
+		creds = grpc.WithTransportCredentials(insecure.NewCredentials())
+	} else {
+		// With TLS
+		creds = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, getServerURL()))
+	}
+
+	conn, err := grpc.NewClient(getServerURL(), creds)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

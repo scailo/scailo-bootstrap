@@ -48,7 +48,7 @@ Before running the tool, you must configure your Scailo credentials. These are s
 ### Sample `.env` File
 
 ```env
-server_url=your-scailo-instance.com:443
+server_url=https://your-scailo-instance.com:443
 username=your-username
 password=your-password
 ```
