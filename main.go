@@ -28,6 +28,10 @@ func getServerURL() string {
 	return serverURL
 }
 
+func getOperationalServerURL() string {
+	return strings.Split(serverURL, "//")[1]
+}
+
 func getLoginCreds() (username string, password string) {
 	return envUsername, envPassword
 }
@@ -84,10 +88,10 @@ func main() {
 		creds = grpc.WithTransportCredentials(insecure.NewCredentials())
 	} else {
 		// With TLS
-		creds = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, getServerURL()))
+		creds = grpc.WithTransportCredentials(credentials.NewClientTLSFromCert(nil, getOperationalServerURL()))
 	}
 
-	conn, err := grpc.NewClient(getServerURL(), creds)
+	conn, err := grpc.NewClient(getOperationalServerURL(), creds)
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}
