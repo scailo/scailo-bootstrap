@@ -44,6 +44,10 @@ func downloadClientsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.S
 	return sdk.NewClientsServiceClient(conn).DownloadAsCSV(ctx, &sdk.ClientsServiceFilterReq{})
 }
 
+func downloadProjectsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.StandardFile, error) {
+	return sdk.NewProjectsServiceClient(conn).DownloadImportTemplate(ctx, &sdk.Empty{})
+}
+
 func downloadComponentsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.StandardFile, error) {
 	return sdk.NewComponentsServiceClient(conn).DownloadImportTemplate(ctx, &sdk.Empty{})
 }
@@ -216,6 +220,8 @@ func downloadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn) {
 	savePrimaryRecordsToFile(downloadBankAccountsTemplate(ctx, conn))
 	// Clients
 	savePrimaryRecordsToFile(downloadClientsTemplate(ctx, conn))
+	// Projects
+	savePrimaryRecordsToFile(downloadProjectsTemplate(ctx, conn))
 	// Components
 	savePrimaryRecordsToFile(downloadComponentsTemplate(ctx, conn))
 	// Currencies

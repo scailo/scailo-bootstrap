@@ -406,6 +406,51 @@ func uploadClientsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVer
 	}
 }
 
+func uploadProjectsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
+	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadProjectsTemplate(ctx, conn))
+	var addedList = initAddedList()
+	var err error
+	c := sdk.NewProjectsServiceClient(conn)
+
+	if toUploadFile != nil {
+		addedList, err = c.ImportFromCSV(ctx, toUploadFile)
+		if err != nil {
+			panic(fmt.Errorf("error while uploading projects: %v from file: %s", err, toUploadFile.Name))
+		}
+		fmt.Printf("successfully uploaded projects from: %s\n", toUploadFile.Name)
+	}
+
+	if len(addedList.List) > 0 {
+		for _, identifier := range addedList.List {
+			if shouldVerify {
+				_, err = c.SendForVerification(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Sending for verification from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while sending project for verification is: %v", err))
+				}
+				_, err = c.Verify(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Verifying from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while verifying project is: %v", err))
+				}
+			}
+			if shouldVerify && shouldApprove {
+				_, err = c.Approve(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Approving from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while approving project is: %v", err))
+				}
+			}
+		}
+	}
+}
+
 func uploadComponentsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldSendToStore bool) {
 	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadComponentsTemplate(ctx, conn))
 	var addedList = initAddedList()
@@ -2070,6 +2115,7 @@ func uploadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn, shouldVeri
 	uploadBankAccountsTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadCurrenciesTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadClientsTemplate(ctx, conn, shouldVerify, shouldApprove)
+	uploadProjectsTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadUnitsOfMaterialsTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadLedgersTemplate(ctx, conn, shouldVerify, shouldApprove)
 	uploadLabelsTemplate(ctx, conn)
