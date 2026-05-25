@@ -200,6 +200,10 @@ func downloadVendorsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.S
 	return sdk.NewVendorsServiceClient(conn).DownloadAsCSV(ctx, &sdk.VendorsServiceFilterReq{})
 }
 
+func downloadMeetingsTemplate(ctx context.Context, conn *grpc.ClientConn) (*sdk.StandardFile, error) {
+	return sdk.NewMeetingsServiceClient(conn).DownloadAsCSV(ctx, &sdk.MeetingsServiceFilterReq{})
+}
+
 func downloadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn) {
 	// Action Codes
 	savePrimaryRecordsToFile(downloadActionCodesTemplate(ctx, conn))
@@ -303,6 +307,8 @@ func downloadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn) {
 	savePrimaryRecordsToFile(downloadUsersTemplate(ctx, conn))
 	// Vendors
 	savePrimaryRecordsToFile(downloadVendorsTemplate(ctx, conn))
+	// Meetings
+	savePrimaryRecordsToFile(downloadMeetingsTemplate(ctx, conn))
 
 	fmt.Println("Generated all the primary CSV files successfully")
 }

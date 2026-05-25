@@ -317,6 +317,13 @@ func uploadAssociatesTemplate(ctx context.Context, conn *grpc.ClientConn) {
 	}
 }
 
+func uploadMeetingsTemplate(ctx context.Context, conn *grpc.ClientConn) {
+	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadMeetingsTemplate(ctx, conn))
+	if toUploadFile != nil {
+		sdk.NewMeetingsServiceClient(conn).ImportFromCSV(ctx, toUploadFile)
+	}
+}
+
 func uploadBankAccountsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
 	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadBankAccountsTemplate(ctx, conn))
 	var addedList = initAddedList()
@@ -2161,6 +2168,7 @@ func uploadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn, shouldVeri
 	uploadEquationsWorkOrdersTemplate(ctx, conn, shouldVerify, shouldApprove)
 
 	uploadAssociatesTemplate(ctx, conn)
+	uploadMeetingsTemplate(ctx, conn)
 
 	fmt.Println("Uploaded all relevant files")
 }
