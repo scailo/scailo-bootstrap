@@ -2104,6 +2104,51 @@ func uploadVendorsTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVer
 	}
 }
 
+func uploadQuestionnaireTemplatesTemplate(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
+	toUploadFile, _ := getCSVRowsFromPrimaryRecordsFile(downloadQuestionnaireTemplatesTemplate(ctx, conn))
+	var addedList = initAddedList()
+	var err error
+	c := sdk.NewQuestionnaireTemplatesServiceClient(conn)
+
+	if toUploadFile != nil {
+		addedList, err = c.ImportFromCSV(ctx, toUploadFile)
+		if err != nil {
+			panic(fmt.Errorf("error while uploading questionnaire templates: %v from file: %s", err, toUploadFile.Name))
+		}
+		fmt.Printf("successfully uploaded questionnaire templates from: %s\n", toUploadFile.Name)
+	}
+
+	if len(addedList.List) > 0 {
+		for _, identifier := range addedList.List {
+			if shouldVerify {
+				_, err = c.SendForVerification(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Sending for verification from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while sending questionnaire template for verification is: %v", err))
+				}
+				_, err = c.Verify(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Verifying from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while verifying questionnaire template is: %v", err))
+				}
+			}
+			if shouldVerify && shouldApprove {
+				_, err = c.Approve(ctx, &sdk.IdentifierUUIDWithUserComment{
+					Uuid:        identifier.Uuid,
+					UserComment: "Approving from uploader program",
+				})
+				if err != nil {
+					panic(fmt.Errorf("error while approving questionnaire template is: %v", err))
+				}
+			}
+		}
+	}
+}
+
 func uploadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn, shouldVerify bool, shouldApprove bool) {
 	uploadFormsSectionsTemplate(ctx, conn)
 	uploadFormsFieldsTemplate(ctx, conn)
@@ -2169,6 +2214,8 @@ func uploadPrimaryRecords(ctx context.Context, conn *grpc.ClientConn, shouldVeri
 
 	uploadAssociatesTemplate(ctx, conn)
 	uploadMeetingsTemplate(ctx, conn)
+
+	uploadQuestionnaireTemplatesTemplate(ctx, conn, shouldVerify, shouldApprove)
 
 	fmt.Println("Uploaded all relevant files")
 }
